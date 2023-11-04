@@ -6,13 +6,13 @@ import examRoute from "./routes/exam";
 import quizRoute from "./routes/quiz";
 import reportRoute from "./routes/report";
 import userRoute from "./routes/user";
-
 import ProjectError from "./helper/error";
 import { ReturnResponse } from "./utils/interfaces";
 
 const app = express();
 
 const connectionString = process.env.CONNECTION_STRING || "";
+
 const port = process.env.PORT;
 
 app.use(express.json());
@@ -68,16 +68,13 @@ app.use(
   }
 );
 
-mongoose.connect(connectionString).then(
-  () => {
+(async () => {
+  try {
+    await mongoose.connect(connectionString);
     app.listen(port, () => {
       console.log("Server Connected");
     });
-  },
-  (err) => {
-    if (err) {
-      console.log(err);
-      return;
-    }
+  } catch (error) {
+    console.log(error);
   }
-);
+})();
