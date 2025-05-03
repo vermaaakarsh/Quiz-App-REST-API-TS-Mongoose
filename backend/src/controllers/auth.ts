@@ -5,15 +5,14 @@ import jwt from "jsonwebtoken";
 import ProjectError from "../helper/error";
 import User from "../models/user";
 import { ReturnResponse } from "../utils/interfaces";
+import sendEmail from "../utils/email";
 import Mailgen from "mailgen";
-
 import OTP from "../models/otp";
 import sendEmailOTPRegister from "./otp";
 
-const secretKey = process.env.SECRET_KEY || "";
+const secretKey = process.env.SECRET_KEY ?? "";
 const SERVER_BASE_URL = process.env.BASE_URL;
 
-//const registerUser:RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
 const registerUser: RequestHandler = async (req, res, next) => {
   let resp: ReturnResponse;
   try {
@@ -27,11 +26,11 @@ const registerUser: RequestHandler = async (req, res, next) => {
     const token = jwt.sign({ email: email }, secretKey);
     // send email otp for registration
     const sendOtp = await sendEmailOTPRegister(email);
-    // if email send successfull
+    // if email send successful
     if (sendOtp) {
       // check user already present in User DataBase or not
       const checkUserExits = await User.findOne({ email });
-      // if User present in databse then only update the data
+      // if User present in database then only update the data
       if (checkUserExits) {
         // update data
         checkUserExits.name = name;
@@ -45,7 +44,7 @@ const registerUser: RequestHandler = async (req, res, next) => {
         };
         res.status(201).send(resp);
       } else {
-        // if user does not present in Databse then create a new entry
+        // if user does not present in Database then create a new entry
         const user = new User({ email, name, password });
         const result = await user.save();
         if (!result) {
@@ -211,7 +210,7 @@ const activateAccount: RequestHandler = async (req, res, next) => {
         message: "Key Validated you have only attempt for login",
       };
       res.status(200).send(resp);
-    } else if (!user?.temperoryKey.length) {
+    } else if (!user?.temporaryKey.length) {
       const err = new ProjectError("User is already Activated");
       err.statusCode = 403;
       throw err;
@@ -267,7 +266,7 @@ const generateEmail = async (
         `,
         button: {
           text: "Thank You",
-          link: `http://${SERVER_BASE_URL}/auth/activateaccount/${temperoryKey}`,
+          link: `http://${SERVER_BASE_URL}/auth/activateaccount/${temporaryKey}`,
         },
       },
       outro: "Discover your inner genius - Take the quiz now!",
@@ -285,8 +284,8 @@ const generateEmail = async (
     .sendMail(message)
     .then(() => {})
     .catch((error) => async () => {
-      let user = await User.findOne({ email: emailaddress }); //If there is some issue in generating email set the temperory key string in collection to empty
-      user && (user.temperoryKey = "");
+      let user = await User.findOne({ email: emailAddress }); //If there is some issue in generating email set the temporary key string in collection to empty
+      user && (user.temporaryKey = "");
       await user?.save();
       console.log("Unable to Send the Email");
     });
@@ -344,9 +343,6 @@ const activateUser: RequestHandler = async (req, res, next) => {
           http://${SERVER_BASE_URL}/auth/activate/${emailToken}<br><br>
           `,
           button: {
-            color: "#22BC66", // Optional action button color
-            text: "Activate Account",
-            link: `http://SERVER_BASE_URL/auth/activate/${emailToken}/`,
             color: "#22BC66", // Optional action button color
             text: "Activate Account",
             link: `http://${SERVER_BASE_URL}/auth/activate/${emailToken}/`,
@@ -458,7 +454,6 @@ const forgotPasswordCallback: RequestHandler = async (req, res, next) => {
   let resp: ReturnResponse;
   try {
     //verify token sent
-    const secretKey = process.env.SECRET_KEY || "";
     let decodedToken;
     const token = req.params.token;
     decodedToken = <any>jwt.verify(token, secretKey);
@@ -471,8 +466,6 @@ const forgotPasswordCallback: RequestHandler = async (req, res, next) => {
 
     const userId = decodedToken.userId;
 
-    // const redirectLink = `http://${process.env.BASE_URL}/auth/forgotpassword/${userId}`;
-    // res.redirect(redirectLink);
     console.log(`http://${process.env.BASE_URL}/auth/forgotpassword/${userId}`);
   } catch (error) {
     next(error);
@@ -494,7 +487,7 @@ const resetPassword: RequestHandler = async (req, res, next) => {
     let password = await bcrypt.hash(req.body.password, 12);
     const confirmPassword = req.body.confirmPassword;
 
-    // checking if password and confirmpassword are the same
+    // checking if password and confirmPassword are the same
     const isPasswordMatching = await bcrypt.compare(confirmPassword, password);
     if (!isPasswordMatching) {
       const err = new ProjectError(
@@ -513,13 +506,9 @@ const resetPassword: RequestHandler = async (req, res, next) => {
   }
 };
 
-const isUserExist = async (email: String) => {
+const isUserExist = async (email: string) => {
   const user = await User.findOne({ email });
-  if (!user) {
-    return false;
-  } else if (user && !user.isVerified) {
-    return false;
-  } else if (user && !user.isVerified) {
+  if (!user || !user.isVerified) {
     return false;
   }
   return true;
@@ -579,18 +568,14 @@ const isPasswordValid = async (password: string) => {
 const verifyRegistrationOTP: RequestHandler = async (req, res, next) => {
   try {
     let resp: ReturnResponse;
-    // const email = req.params.email;
-    const secretKey = process.env.SECRET_KEY || "";
     // decode the params token
-    let decodedToken: { email: String };
+    let decodedToken: { email: string };
     decodedToken = <any>jwt.verify(req.params.token, secretKey);
     // convert Object String to string
     const email = decodedToken.email.toString();
 
     // take otp from body
     const otp = req.body.otp;
-    // console.log("Email from params : ", email);
-    // console.log("Email from BODY OTP : ", otp);
 
     // Check User present or not
     const user = await User.findOne({ email });
@@ -627,7 +612,7 @@ const verifyRegistrationOTP: RequestHandler = async (req, res, next) => {
 
     // update data verified true
     user.isVerified = true;
-    const result = await user.save();
+    await user.save();
     resp = {
       status: "success",
       message: "Registration Done !!",
@@ -647,7 +632,6 @@ export {
   isUserExist,
   loginUser,
   registerUser,
-  activateAccount,
   activateAccount,
   forgotPassword,
   forgotPasswordCallback,

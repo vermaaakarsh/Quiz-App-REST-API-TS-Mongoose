@@ -5,8 +5,6 @@ import ProjectError from "../helper/error";
 import User from "../models/user";
 import { ReturnResponse } from "../utils/interfaces";
 
-import sendEmail from "../utils/email";
-
 import OTP from "../models/otp";
 import { sendDeactivateEmailOTP } from "./otp";
 
@@ -172,14 +170,14 @@ const deactivateUser: RequestHandler = async (req, res, next) => {
     }
 
     // Send a deactivate email OTP
-    const sendDeactivateOTP = sendDeactivateEmailOTP(user.email);
+    const sendDeactivateOTP = await sendDeactivateEmailOTP(user.email);
     // if otp not send then throw an error OTP not send
     if (!sendDeactivateOTP) {
       const err = new ProjectError("Email OTP has not sent..");
       err.statusCode = 401;
       throw err;
     }
-    // if OTP send sucessfully then return a response otp send
+    // if OTP send successfully then return a response otp send
     resp = {
       status: "success",
       message: "An Email OTP has been sent to your account please verify!",
@@ -209,7 +207,7 @@ const verifyDeactivateAccountOTP: RequestHandler = async (req, res, next) => {
     }
     // Check user already deactivate or not
     if (user && user.isDeactivated) {
-      const err = new ProjectError("User already Deactivaated");
+      const err = new ProjectError("User already Deactivated");
       err.statusCode = 401;
       throw err;
     }
@@ -236,10 +234,10 @@ const verifyDeactivateAccountOTP: RequestHandler = async (req, res, next) => {
     // Deactivate Account
     user.isDeactivated = true;
     // Save result into database
-    const result = await user.save();
+    await user.save();
     resp = {
       status: "success",
-      message: "Deactivate Account Successfull !!",
+      message: "Deactivate Account Successful!!",
       data: { userId: user._id, email: email },
     };
     res.status(200).send(resp);
@@ -248,7 +246,7 @@ const verifyDeactivateAccountOTP: RequestHandler = async (req, res, next) => {
   }
 };
 
-const isActiveUser = async (userId: String) => {
+const isActiveUser = async (userId: string) => {
   const user = await User.findById(userId);
 
   if (!user) {

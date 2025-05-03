@@ -61,7 +61,7 @@ router.post(
           return Promise.reject(err);
         });
     }),
-    body("passingPercentage").custom((passingPercentage: Number) => {
+    body("passingPercentage").custom((passingPercentage: number) => {
       if (passingPercentage == 0) {
         return Promise.reject("Passing percentage can not be zero..");
       }
@@ -121,7 +121,7 @@ router.put(
           return Promise.reject(err);
         });
     }),
-    body("passingPercentage").custom((passingPercentage: Number) => {
+    body("passingPercentage").custom((passingPercentage: number) => {
       if (passingPercentage == 0) {
         return Promise.reject("Passing percentage can not be zero..");
       }

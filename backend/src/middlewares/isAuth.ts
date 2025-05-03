@@ -24,7 +24,7 @@ const isAuthenticated = async (
 
     await blacklistedTokenCheck(token);
 
-    let decodedToken: { userId: String; iat: Number; exp: Number };
+    let decodedToken: { userId: string; iat: number; exp: number };
     try {
       decodedToken = <any>jwt.verify(token, secretKey);
     } catch (error) {
