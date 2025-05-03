@@ -27,21 +27,25 @@ const userSchema = new schema(
       type: Number,
       default: 3,
     },
-    temperoryKey: {  //Helped to generate a temperory key to validate account and have an extra login attempt
-      type:String,
-      default: ''
+    temporaryKey: {
+      //Helped to generate a temporary key to validate account and have an extra login attempt
+      type: String,
+      default: "",
     },
-    freezeTime: { //It is used to calculate the remaining try if account is blocked due to maximum invalid tries
+    freezeTime: {
+      //It is used to calculate the remaining try if account is blocked due to maximum invalid tries
       type: Date,
-      default: new Date()
+      default: new Date(),
     },
-    accountBlocked: { //It shows whether the account is blocked or not
+    accountBlocked: {
+      //It shows whether the account is blocked or not
       type: Boolean,
-      default: false
+      default: false,
     },
-    isTempKeyUsed: { //It shows whether the temperory key is used or not
+    isTempKeyUsed: {
+      //It shows whether the temporary key is used or not
       type: Boolean,
-      default: false
+      default: false,
     },
   },
   { timestamps: true }

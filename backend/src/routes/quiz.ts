@@ -9,7 +9,7 @@ import {
   isValidQuizName,
   publishQuiz,
   updateQuiz,
-  getAllQuiz
+  getAllQuiz,
 } from "../controllers/quiz";
 import { validateRequest } from "../helper/validateRequest";
 import { isAuthenticated } from "../middlewares/isAuth";
@@ -30,9 +30,9 @@ router.post(
       .withMessage("Please enter a valid name, minimum 10 character long")
       .custom((name) => {
         return isValidQuizName(name)
-          .then((status: Boolean) => {
+          .then((status: boolean) => {
             if (!status) {
-              return Promise.reject("Plaase enter an unique quiz name.");
+              return Promise.reject("Please enter an unique quiz name.");
             }
           })
           .catch((err) => {
@@ -44,11 +44,11 @@ router.post(
       .not()
       .isEmpty()
       .toLowerCase()
-      .isIn(['test', 'exam'])
+      .isIn(["test", "exam"])
       .withMessage("category can only be 'test' or 'exam'"),
     body("questionList").custom((questionList, { req }) => {
       return isValidQuiz(questionList, req.body["answers"])
-        .then((status: Boolean) => {
+        .then((status: boolean) => {
           if (!status) {
             return Promise.reject(
               "Please enter a valid quiz having atleast one question, and answers with correct options!"
@@ -65,7 +65,7 @@ router.post(
 );
 
 //Get  quiz/allpublished quiz
-router.get("/allpublishedquiz",isAuthenticated, getAllQuiz);
+router.get("/allpublishedquiz", isAuthenticated, getAllQuiz);
 
 // get
 // GET /quiz/:quizId
@@ -87,10 +87,10 @@ router.put(
       .withMessage("Please enter a valid name, minimum 10 character long"),
     body("questionList").custom((questionList, { req }) => {
       return isValidQuiz(questionList, req.body["answers"])
-        .then((status: Boolean) => {
+        .then((status: boolean) => {
           if (!status) {
             return Promise.reject(
-              "Please enter a valid quiz having atleast one question, and answers with correct option!"
+              "Please enter a valid quiz having at least one question, and answers with correct option!"
             );
           }
         })

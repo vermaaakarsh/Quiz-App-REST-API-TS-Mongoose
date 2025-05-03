@@ -7,7 +7,7 @@ import { ReturnResponse } from "../utils/interfaces";
 const getReport: RequestHandler = async (req, res, next) => {
   try {
     let report;
-    if (!!req.params.reportId) {
+    if (req.params.reportId) {
       const reportId = req.params.reportId;
       report = await Report.findById(reportId);
 

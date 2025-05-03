@@ -14,7 +14,14 @@ const createQuiz: RequestHandler = async (req, res, next) => {
     const answers = req.body.answers;
     const passingPercentage = req.body.passingPercentage;
 
-    const quiz = new Quiz({ name, category, questionList, answers, passingPercentage, createdBy });
+    const quiz = new Quiz({
+      name,
+      category,
+      questionList,
+      answers,
+      passingPercentage,
+      createdBy,
+    });
     const result = await quiz.save();
     const resp: ReturnResponse = {
       status: "success",
@@ -191,7 +198,7 @@ const publishQuiz: RequestHandler = async (req, res, next) => {
 };
 
 const isValidQuiz = async (
-  questionList: [{ questionNumber: Number; question: String; options: {} }],
+  questionList: [{ questionNumber: number; question: string; options: {} }],
   answers: {}
 ) => {
   if (!questionList.length) {
@@ -202,13 +209,14 @@ const isValidQuiz = async (
   }
   let flag = true;
   questionList.forEach(
-    (question: { questionNumber: Number; question: String; options: {} }) => {
+    (question: { questionNumber: number; question: string; options: {} }) => {
       let opt = Object.keys(question["options"]);
       if (
         opt.indexOf(
-          `${Object.values(answers)[
-          Object.keys(answers).indexOf(question.questionNumber.toString())
-          ]
+          `${
+            Object.values(answers)[
+              Object.keys(answers).indexOf(question.questionNumber.toString())
+            ]
           }`
         ) == -1
       ) {
@@ -219,7 +227,7 @@ const isValidQuiz = async (
   return flag;
 };
 
-const isValidQuizName = async (name: String) => {
+const isValidQuizName = async (name: string) => {
   const quiz = await Quiz.findOne({ name });
   if (!quiz) {
     return true;
@@ -229,16 +237,19 @@ const isValidQuizName = async (name: String) => {
 
 const getAllQuiz: RequestHandler = async (req, res, next) => {
   try {
-    let quiz = await Quiz.find({ isPublished: true }, {
-      name: 1,
-      category: 1,
-      questionList: 1,
-      createdBy: 1,
-      passingPercentage: 1
-    });
+    let quiz = await Quiz.find(
+      { isPublished: true },
+      {
+        name: 1,
+        category: 1,
+        questionList: 1,
+        createdBy: 1,
+        passingPercentage: 1,
+      }
+    );
     //filter quizzes created by user itself
-    quiz = quiz.filter(item => item.createdBy.toString() !== req.userId);
-    
+    quiz = quiz.filter((item) => item.createdBy.toString() !== req.userId);
+
     if (!quiz) {
       const err = new ProjectError("No quiz found!");
       err.statusCode = 404;
@@ -250,7 +261,6 @@ const getAllQuiz: RequestHandler = async (req, res, next) => {
       data: quiz,
     };
     res.status(200).send(resp);
-
   } catch (error) {
     next(error);
   }
@@ -264,5 +274,5 @@ export {
   isValidQuizName,
   publishQuiz,
   updateQuiz,
-  getAllQuiz
+  getAllQuiz,
 };

@@ -57,7 +57,6 @@ const updateUser: RequestHandler = async (req, res, next) => {
   }
 };
 
-
 const changePassword: RequestHandler = async (req, res, next) => {
   let resp: ReturnResponse;
   const userId = req.userId;
@@ -103,11 +102,9 @@ const changePassword: RequestHandler = async (req, res, next) => {
     }
 
     // checking if current password and new password are same
-    const prevPasswordSame = await bcrypt.compare(currentPassword,newPassword)
-    if(prevPasswordSame){
-      const err = new ProjectError(
-        "Same as current password. Try another one"
-      );
+    const prevPasswordSame = await bcrypt.compare(currentPassword, newPassword);
+    if (prevPasswordSame) {
+      const err = new ProjectError("Same as current password. Try another one");
       err.statusCode = 401;
       throw err;
     }
@@ -148,7 +145,7 @@ const deactivateUser: RequestHandler = async (req, res, next) => {
   }
 };
 
-const isActiveUser = async (userId: String) => {
+const isActiveUser = async (userId: string) => {
   const user = await User.findById(userId);
 
   if (!user) {

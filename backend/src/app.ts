@@ -11,7 +11,7 @@ import { ReturnResponse } from "./utils/interfaces";
 
 const app = express();
 
-const connectionString = process.env.CONNECTION_STRING || "";
+const connectionString = process.env.CONNECTION_STRING ?? "";
 
 const port = process.env.PORT;
 
@@ -19,7 +19,7 @@ app.use(express.json());
 declare global {
   namespace Express {
     interface Request {
-      userId: String;
+      userId: string;
     }
   }
 }
@@ -47,7 +47,7 @@ app.use(
   (err: ProjectError, req: Request, res: Response, next: NextFunction) => {
     // email to corresponding email
     // logger for err
-    let message: String;
+    let message: string;
     let statusCode: number;
 
     if (!!err.statusCode && err.statusCode < 500) {
@@ -59,7 +59,7 @@ app.use(
     }
 
     let resp: ReturnResponse = { status: "error", message, data: {} };
-    if (!!err.data) {
+    if (err.data) {
       resp.data = err.data;
     }
 

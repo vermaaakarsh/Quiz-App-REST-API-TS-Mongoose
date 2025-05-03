@@ -25,7 +25,7 @@ router.post(
       .isEmpty()
       .custom((quizId) => {
         return doesQuizExist(quizId)
-          .then((status: Boolean) => {
+          .then((status: boolean) => {
             if (!status) {
               return Promise.reject("Please provide a valid quiz id.");
             }
@@ -39,7 +39,7 @@ router.post(
       .isEmpty()
       .custom((attemptedQuestion, { req }) => {
         return isValidAttempt(attemptedQuestion, req.body.quizId)
-          .then((status: Boolean) => {
+          .then((status: boolean) => {
             if (!status) {
               return Promise.reject();
             }

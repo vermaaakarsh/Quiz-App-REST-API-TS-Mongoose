@@ -1,6 +1,6 @@
 interface ReturnResponse {
   status: "success" | "error";
-  message: String;
+  message: string;
   data: {} | [];
 }
 

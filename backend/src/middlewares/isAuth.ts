@@ -10,7 +10,7 @@ const isAuthenticated = async (
   next: NextFunction
 ) => {
   try {
-    const secretKey = process.env.SECRET_KEY || "";
+    const secretKey = process.env.SECRET_KEY ?? "";
     const authHeader = req.get("Authorization");
 
     if (!authHeader) {
@@ -20,7 +20,7 @@ const isAuthenticated = async (
     }
 
     const token = authHeader.split(" ")[1];
-    let decodedToken: { userId: String; iat: Number; exp: Number };
+    let decodedToken: { userId: string; iat: number; exp: number };
     try {
       decodedToken = <any>jwt.verify(token, secretKey);
     } catch (error) {

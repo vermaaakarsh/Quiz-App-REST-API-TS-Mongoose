@@ -27,7 +27,6 @@ router.put("/", isAuthenticated, updateUser);
 //PATCH /user/deactivate
 router.patch("/deactivate", isAuthenticated, deactivateUser);
 
-
 //Put  /user/changepassword
 router.put(
   "/changepassword",
@@ -36,9 +35,9 @@ router.put(
     body("newPassword")
       .trim()
       .isLength({ min: 8 })
-      .custom((password: String) => {
+      .custom((password: string) => {
         return isPasswordValid(password)
-          .then((status: Boolean) => {
+          .then((status: boolean) => {
             if (!status)
               return Promise.reject(
                 "Enter a valid password, having atleast 8 characters including 1 small alphabet, 1 capital albhabet, 1 digit and 1 special character($,@,!,#,*)."

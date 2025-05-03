@@ -9,7 +9,7 @@ import {
   isUserExist,
   loginUser,
   registerUser,
-  activateAccount
+  activateAccount,
 } from "../controllers/auth";
 import { validateRequest } from "../helper/validateRequest";
 
@@ -28,9 +28,9 @@ router.post(
     body("email")
       .trim()
       .isEmail()
-      .custom((emailId: String) => {
+      .custom((emailId: string) => {
         return isUserExist(emailId)
-          .then((status: Boolean) => {
+          .then((status: boolean) => {
             if (status) {
               return Promise.reject("User already exist!");
             }
@@ -42,9 +42,9 @@ router.post(
     body("password")
       .trim()
       .isLength({ min: 8 })
-      .custom((password: String) => {
+      .custom((password: string) => {
         return isPasswordValid(password)
-          .then((status: Boolean) => {
+          .then((status: boolean) => {
             if (!status)
               return Promise.reject(
                 "Enter a valid password, having atleast 8 characters including 1 small alphabet, 1 capital albhabet, 1 digit and 1 special character($,@,!,#,*)."
@@ -56,7 +56,7 @@ router.post(
       }),
     body("confirmPassword")
       .trim()
-      .custom((value: String, { req }) => {
+      .custom((value: string, { req }) => {
         if (value != req.body.password) {
           return Promise.reject("Password mismatched!");
         }
@@ -75,9 +75,9 @@ router.post(
     body("password")
       .trim()
       .isLength({ min: 8 })
-      .custom((password: String) => {
+      .custom((password: string) => {
         return isPasswordValid(password)
-          .then((status: Boolean) => {
+          .then((status: boolean) => {
             if (!status) return Promise.reject();
           })
           .catch((err) => {
@@ -91,19 +91,20 @@ router.post(
 );
 
 //POST /auth/activate account
-router.post('/activateaccount', [
-  body('key')
-  .trim()
-  .isLength({min: 8}).withMessage("Invalid Key!"),
-  body("email").trim().isEmail().withMessage("Invalid Email!")
-], activateAccount)
+router.post(
+  "/activateaccount",
+  [
+    body("key").trim().isLength({ min: 8 }).withMessage("Invalid Key!"),
+    body("email").trim().isEmail().withMessage("Invalid Email!"),
+  ],
+  activateAccount
+);
 
 router.post(
   "/activate",
   [body("email").trim().isEmail().withMessage("Invalid Email!")],
   activateUser
 );
-
 
 //re-activate link
 // GET /user/activate
