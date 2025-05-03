@@ -1,6 +1,7 @@
 // Redirect request to Particular method on Controller
 import express from "express";
 import { body } from "express-validator";
+import { resendRegistrationOTP } from "../controllers/otp";
 
 import {
   activateUser,
@@ -10,6 +11,10 @@ import {
   loginUser,
   registerUser,
   activateAccount,
+  forgotPassword,
+  forgotPasswordCallback,
+  resetPassword,
+  verifyRegistrationOTP,
 } from "../controllers/auth";
 import { validateRequest } from "../helper/validateRequest";
 
@@ -100,6 +105,14 @@ router.post(
   activateAccount
 );
 
+//Verify Registration otp route
+// POST -> /auth/verify-registration-otp/:token  (use params)
+router.post("/verify-registration-otp/:token", verifyRegistrationOTP);
+
+// Resend otp for registration
+// POST -> /auth/resend-registration-otp/:token  (use Params)
+router.get("/resend-registration-otp/:token", resendRegistrationOTP);
+
 router.post(
   "/activate",
   [body("email").trim().isEmail().withMessage("Invalid Email!")],
@@ -109,5 +122,44 @@ router.post(
 //re-activate link
 // GET /user/activate
 router.get("/activate/:token", activateUserCallback);
+
+//POST
+router.post(
+  "/forgotpassword",
+  [body("email").trim().isEmail().withMessage("Invalid Email!")],
+  forgotPassword
+);
+
+router.get("/forgotpassword/:token", forgotPasswordCallback);
+
+router.post(
+  "/forgotpassword/:userId",
+  [
+    body("password")
+      .trim()
+      .isLength({ min: 8 })
+      .custom((password: String) => {
+        return isPasswordValid(password)
+          .then((status: Boolean) => {
+            if (!status)
+              return Promise.reject(
+                "Enter a valid password, having atleast 8 characters including 1 small alphabet, 1 capital albhabet, 1 digit and 1 special character($,@,!,#,*)."
+              );
+          })
+          .catch((err) => {
+            return Promise.reject(err);
+          });
+      }),
+    body("confirmPassword")
+      .trim()
+      .custom((value: String, { req }) => {
+        if (value != req.body.password) {
+          return Promise.reject("Password mismatched!");
+        }
+        return true;
+      }),
+  ],
+  resetPassword
+);
 
 export default router;

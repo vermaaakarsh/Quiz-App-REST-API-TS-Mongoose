@@ -10,6 +10,8 @@ import {
   publishQuiz,
   updateQuiz,
   getAllQuiz,
+  getAllQuizExam,
+  getAllQuizTest,
 } from "../controllers/quiz";
 import { validateRequest } from "../helper/validateRequest";
 import { isAuthenticated } from "../middlewares/isAuth";
@@ -59,6 +61,21 @@ router.post(
           return Promise.reject(err);
         });
     }),
+    body("passingPercentage").custom((passingPercentage: Number) => {
+      if (passingPercentage == 0) {
+        return Promise.reject("Passing percentage can not be zero..");
+      }
+      return true;
+    }),
+    body("difficultyLevel").custom((difficultyLevel) => {
+      if (
+        !difficultyLevel ||
+        !["easy", "medium", "hard"].includes(difficultyLevel)
+      ) {
+        return Promise.reject("Difficulty level must be easy, medium and hard");
+      }
+      return true;
+    }),
   ],
   validateRequest,
   createQuiz
@@ -66,6 +83,12 @@ router.post(
 
 //Get  quiz/allpublished quiz
 router.get("/allpublishedquiz", isAuthenticated, getAllQuiz);
+
+//Get  quiz/allpublished quiz/exam
+router.get("/allpublishedquiz/exam", isAuthenticated, getAllQuizExam);
+
+//Get  quiz/allpublished quiz/test
+router.get("/allpublishedquiz/test", isAuthenticated, getAllQuizTest);
 
 // get
 // GET /quiz/:quizId
@@ -97,6 +120,21 @@ router.put(
         .catch((err) => {
           return Promise.reject(err);
         });
+    }),
+    body("passingPercentage").custom((passingPercentage: Number) => {
+      if (passingPercentage == 0) {
+        return Promise.reject("Passing percentage can not be zero..");
+      }
+      return true;
+    }),
+    body("difficultyLevel").custom((difficultyLevel) => {
+      if (
+        !difficultyLevel ||
+        !["easy", "medium", "hard"].includes(difficultyLevel)
+      ) {
+        return Promise.reject("Difficulty level must be easy, medium and hard");
+      }
+      return true;
     }),
   ],
   validateRequest,
