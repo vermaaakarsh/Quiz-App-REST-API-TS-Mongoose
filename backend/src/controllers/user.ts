@@ -5,8 +5,8 @@ import ProjectError from "../helper/error";
 import User from "../models/user";
 import { ReturnResponse } from "../utils/interfaces";
 
-import OTP from "../models/otp";
-import { sendDeactivateEmailOTP } from "./otp";
+import Otp from "../models/otp";
+import { sendDeactivateEmailOtp } from "./otp";
 
 const getUser: RequestHandler = async (req, res, next) => {
   let resp: ReturnResponse;
@@ -144,7 +144,7 @@ const deactivateUser: RequestHandler = async (req, res, next) => {
     }
 
     // find OTP for same email if already present then resend otp take time
-    const otpExist = await OTP.findOne({ email: user.email });
+    const otpExist = await Otp.findOne({ email: user.email });
 
     // otp found then throw an error as resend otp after some time
     if (otpExist) {
@@ -170,7 +170,7 @@ const deactivateUser: RequestHandler = async (req, res, next) => {
     }
 
     // Send a deactivate email OTP
-    const sendDeactivateOTP = await sendDeactivateEmailOTP(user.email);
+    const sendDeactivateOTP = await sendDeactivateEmailOtp(user.email);
     // if otp not send then throw an error OTP not send
     if (!sendDeactivateOTP) {
       const err = new ProjectError("Email OTP has not sent..");
@@ -190,7 +190,7 @@ const deactivateUser: RequestHandler = async (req, res, next) => {
 };
 
 //Verify Deactivate Email OTP
-const verifyDeactivateAccountOTP: RequestHandler = async (req, res, next) => {
+const verifyDeactivateAccountOtp: RequestHandler = async (req, res, next) => {
   try {
     let resp: ReturnResponse;
     // take otp from body
@@ -214,7 +214,7 @@ const verifyDeactivateAccountOTP: RequestHandler = async (req, res, next) => {
 
     const email = user.email;
     //find last send otp of same email
-    const matchOTP = await OTP.find({ email }).sort({ createdAt: -1 }).limit(1);
+    const matchOTP = await Otp.find({ email }).sort({ createdAt: -1 }).limit(1);
     console.log("Match OTP : ", matchOTP);
     // if otp not found for this email then throw an error
     if (matchOTP.length === 0) {
@@ -263,5 +263,5 @@ export {
   isActiveUser,
   updateUser,
   changePassword,
-  verifyDeactivateAccountOTP,
+  verifyDeactivateAccountOtp,
 };

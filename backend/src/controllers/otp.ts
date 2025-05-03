@@ -1,5 +1,5 @@
 import sendEmail from "../utils/email";
-import OTP from "../models/otp";
+import Otp from "../models/otp";
 import User from "../models/user";
 import otpGenerator from "otp-generator";
 import ProjectError from "../helper/error";
@@ -8,9 +8,8 @@ import { RequestHandler } from "express";
 
 // Define a function to send emails
 
-async function sendEmailOTPRegister(email: string) {
+async function sendEmailOtpRegister(email: string) {
   try {
-    let resp: ReturnResponse;
     // check if user already present
     // Find user with provided email
     const checkUserPresent = await User.findOne({ email });
@@ -31,7 +30,7 @@ async function sendEmailOTPRegister(email: string) {
       specialChars: false,
     });
 
-    let otpExists = await OTP.findOne({ otp: otp });
+    let otpExists = await Otp.findOne({ otp: otp });
     // when otpExists find then change the otp always unique otp store in database
     while (otpExists) {
       otp = otpGenerator.generate(6, {
@@ -39,7 +38,7 @@ async function sendEmailOTPRegister(email: string) {
         lowerCaseAlphabets: false,
         specialChars: false,
       });
-      otpExists = await OTP.findOne({ otp: otp });
+      otpExists = await Otp.findOne({ otp: otp });
     }
 
     await sendEmail(
@@ -48,8 +47,8 @@ async function sendEmailOTPRegister(email: string) {
       `Registration OTP is ${otp}`
     );
 
-    const saveOTP = new OTP({ email, otp });
-    const saveResult = await saveOTP.save();
+    const saveOtp = new Otp({ email, otp });
+    const saveResult = await saveOtp.save();
 
     if (!saveResult) {
       const err = new ProjectError("OTP has not save in DataBase");
@@ -63,10 +62,10 @@ async function sendEmailOTPRegister(email: string) {
   }
 }
 
-export default sendEmailOTPRegister;
+export default sendEmailOtpRegister;
 
 import jwt from "jsonwebtoken";
-const resendRegistrationOTP: RequestHandler = async (req, res, next) => {
+const resendRegistrationOtp: RequestHandler = async (req, res, next) => {
   try {
     let resp: ReturnResponse;
     const secretKey = process.env.SECRET_KEY ?? "";
@@ -85,7 +84,7 @@ const resendRegistrationOTP: RequestHandler = async (req, res, next) => {
       err.statusCode = 401;
       throw err;
     }
-    const otpExist = await OTP.findOne({ email });
+    const otpExist = await Otp.findOne({ email });
 
     if (otpExist) {
       const otpExistCreatedAt = new Date(otpExist.createdAt); // Assuming otpExist.createdAt is a Date object
@@ -105,7 +104,7 @@ const resendRegistrationOTP: RequestHandler = async (req, res, next) => {
       err.statusCode = 401;
       throw err;
     }
-    const sendOTP = await sendEmailOTPRegister(email);
+    const sendOTP = await sendEmailOtpRegister(email);
     if (!sendOTP) {
       const err = new ProjectError("Resend otp Error");
       err.statusCode = 401;
@@ -122,9 +121,9 @@ const resendRegistrationOTP: RequestHandler = async (req, res, next) => {
   }
 };
 
-export { resendRegistrationOTP };
+export { resendRegistrationOtp };
 
-async function sendDeactivateEmailOTP(email: string) {
+async function sendDeactivateEmailOtp(email: string) {
   try {
     let resp: ReturnResponse;
     // check if user already present
@@ -147,7 +146,7 @@ async function sendDeactivateEmailOTP(email: string) {
       specialChars: false,
     });
 
-    let otpExists = await OTP.findOne({ otp: otp });
+    let otpExists = await Otp.findOne({ otp: otp });
     // when otpExists find then change the otp always unique otp store in database
     while (otpExists) {
       otp = otpGenerator.generate(6, {
@@ -155,7 +154,7 @@ async function sendDeactivateEmailOTP(email: string) {
         lowerCaseAlphabets: false,
         specialChars: false,
       });
-      otpExists = await OTP.findOne({ otp: otp });
+      otpExists = await Otp.findOne({ otp: otp });
     }
 
     await sendEmail(
@@ -164,8 +163,8 @@ async function sendDeactivateEmailOTP(email: string) {
       `Deactivate Account OTP is ${otp}`
     );
 
-    const saveOTP = new OTP({ email, otp });
-    const saveResult = await saveOTP.save();
+    const saveOtp = new Otp({ email, otp });
+    const saveResult = await saveOtp.save();
 
     if (!saveResult) {
       const err = new ProjectError("OTP has not save in DataBase");
@@ -181,4 +180,4 @@ async function sendDeactivateEmailOTP(email: string) {
   }
 }
 
-export { sendDeactivateEmailOTP };
+export { sendDeactivateEmailOtp };

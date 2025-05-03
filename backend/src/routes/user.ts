@@ -7,7 +7,7 @@ import {
   getUser,
   updateUser,
   changePassword,
-  verifyDeactivateAccountOTP,
+  verifyDeactivateAccountOtp,
 } from "../controllers/user";
 
 import { logOut } from "../controllers/blacklistedToken";
@@ -35,7 +35,7 @@ router.patch("/deactivate", isAuthenticated, deactivateUser);
 router.post(
   "/deactivate/verify-deactivate-account-otp",
   isAuthenticated,
-  verifyDeactivateAccountOTP
+  verifyDeactivateAccountOtp
 );
 
 //Put  /user/changepassword

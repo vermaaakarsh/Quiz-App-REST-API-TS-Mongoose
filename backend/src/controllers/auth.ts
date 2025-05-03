@@ -7,8 +7,8 @@ import User from "../models/user";
 import { ReturnResponse } from "../utils/interfaces";
 import sendEmail from "../utils/email";
 import Mailgen from "mailgen";
-import OTP from "../models/otp";
-import sendEmailOTPRegister from "./otp";
+import Otp from "../models/otp";
+import sendEmailOtpRegister from "./otp";
 
 const secretKey = process.env.SECRET_KEY ?? "";
 const SERVER_BASE_URL = process.env.BASE_URL;
@@ -25,7 +25,7 @@ const registerUser: RequestHandler = async (req, res, next) => {
     //create a token using email
     const token = jwt.sign({ email: email }, secretKey);
     // send email otp for registration
-    const sendOtp = await sendEmailOTPRegister(email);
+    const sendOtp = await sendEmailOtpRegister(email);
     // if email send successful
     if (sendOtp) {
       // check user already present in User DataBase or not
@@ -565,7 +565,7 @@ const isPasswordValid = async (password: string) => {
 
 // Verify Registration Email OTP
 
-const verifyRegistrationOTP: RequestHandler = async (req, res, next) => {
+const verifyRegistrationOtp: RequestHandler = async (req, res, next) => {
   try {
     let resp: ReturnResponse;
     // decode the params token
@@ -592,9 +592,9 @@ const verifyRegistrationOTP: RequestHandler = async (req, res, next) => {
     }
 
     // find last send otp for this email
-    const matchOTP = await OTP.find({ email }).sort({ createdAt: -1 }).limit(1);
+    const matchOtp = await Otp.find({ email }).sort({ createdAt: -1 }).limit(1);
     // if otp not present for this email
-    if (matchOTP.length === 0) {
+    if (matchOtp.length === 0) {
       // OTP not found for the email
       const err = new ProjectError(
         "OTP has not send on this email or Invalid OTP"
@@ -603,7 +603,7 @@ const verifyRegistrationOTP: RequestHandler = async (req, res, next) => {
       throw err;
     }
     // if otp not present
-    else if (otp != matchOTP[0].otp) {
+    else if (otp != matchOtp[0].otp) {
       // The otp is not valid
       const err = new ProjectError("Incorrect OTP");
       err.statusCode = 400;
@@ -636,5 +636,5 @@ export {
   forgotPassword,
   forgotPasswordCallback,
   resetPassword,
-  verifyRegistrationOTP,
+  verifyRegistrationOtp,
 };
