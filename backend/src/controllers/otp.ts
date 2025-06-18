@@ -5,6 +5,7 @@ import otpGenerator from "otp-generator";
 import ProjectError from "../helper/error";
 import { ReturnResponse } from "../utils/interfaces";
 import { RequestHandler } from "express";
+import jwt from "jsonwebtoken";
 
 // Define a function to send emails
 
@@ -58,9 +59,6 @@ async function sendEmailOtpRegister(email: string) {
   }
 }
 
-export default sendEmailOtpRegister;
-
-import jwt from "jsonwebtoken";
 const resendRegistrationOtp: RequestHandler = async (req, res, next) => {
   try {
     let resp: ReturnResponse;
@@ -116,8 +114,6 @@ const resendRegistrationOtp: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
-
-export { resendRegistrationOtp };
 
 async function sendDeactivateEmailOtp(email: string) {
   try {
@@ -176,4 +172,4 @@ async function sendDeactivateEmailOtp(email: string) {
   }
 }
 
-export { sendDeactivateEmailOtp };
+export { sendEmailOtpRegister, resendRegistrationOtp, sendDeactivateEmailOtp };

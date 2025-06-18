@@ -195,7 +195,7 @@ const publishQuiz: RequestHandler = async (req, res, next) => {
       throw err;
     }
 
-    if (!!quiz.isPublished) {
+    if (quiz.isPublished) {
       const err = new ProjectError("Quiz is already published!");
       err.statusCode = 405;
       throw err;

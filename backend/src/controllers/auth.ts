@@ -8,7 +8,7 @@ import { ReturnResponse } from "../utils/interfaces";
 import sendEmail from "../utils/email";
 import Mailgen from "mailgen";
 import Otp from "../models/otp";
-import sendEmailOtpRegister from "./otp";
+import { sendEmailOtpRegister } from "./otp";
 
 const secretKey = process.env.SECRET_KEY ?? "";
 const SERVER_BASE_URL = process.env.BASE_URL;
@@ -137,7 +137,7 @@ const loginUser: RequestHandler = async (req, res, next) => {
         if (updated?.temporaryKey.length && !updated?.accountBlocked) {
           user?.isTempKeyUsed && (updated.accountBlocked = true);
           user?.isTempKeyUsed && (updated.temporaryKey = "");
-          updated && (updated.freezeTime = new Date());
+          updated.freezeTime = new Date();
           await updated?.save();
 
           //This function is used if the account is blocked user will receive an email with a temporary key to activate the account if it is used and still invalid tries take place it will blocks the account for 24 hours otherwise it will tell the user to check your registered email address
@@ -153,11 +153,11 @@ const loginUser: RequestHandler = async (req, res, next) => {
           throw err;
         }
 
-        //The following formula is used to generate an 8 digit temporary key and generate the email to the user and calculate the freezee time and temporary key
+        //The following formula is used to generate an 8 digit temporary key and generate the email to the user and calculate the freeze time and temporary key
         const temporaryKey = Math.random().toString(36).substring(2, 10);
         generateEmail(updated?.name || "", temporaryKey, updated?.email || "");
-        updated && (updated.freezeTime = new Date());
-        updated && (updated.temporaryKey = temporaryKey);
+        updated.freezeTime = new Date();
+        updated.temporaryKey = temporaryKey;
         await updated?.save();
         const err = new ProjectError(
           `Your Account has been deactivated check your registered email for further instructions`
@@ -188,8 +188,8 @@ const activateAccount: RequestHandler = async (req, res, next) => {
       throw err;
     }
     if (req.body.key == user?.temporaryKey) {
-      user && (user.remainingTry = 1);
-      user && (user.isTempKeyUsed = true);
+      user.remainingTry = 1;
+      user.isTempKeyUsed = true;
       await user?.save();
       const resp = {
         status: "success",
@@ -351,7 +351,7 @@ const activateUser: RequestHandler = async (req, res, next) => {
         console.log("Email Sent ");
       })
       .catch((error) => {
-        console.log("Unable to Send the Email");
+        console.log("Unable to Send the Email", error);
       });
 
     resp = {
@@ -420,7 +420,7 @@ const forgotPassword: RequestHandler = async (req, res, next) => {
 
     const message = `
     Click on the below link to reset the password of your account:
-    http://${process.env.BASE_URL}/auth/forgotpassword/${emailToken}
+    http://${SERVER_BASE_URL}/auth/forgotpassword/${emailToken}
     
     (Note: If the link is not clickable kindly copy the link and paste it in the browser.)`;
     sendEmail(user.email, "Verify Email", message);
@@ -452,7 +452,7 @@ const forgotPasswordCallback: RequestHandler = async (req, res, next) => {
 
     const userId = decodedToken.userId;
 
-    console.log(`http://${process.env.BASE_URL}/auth/forgotpassword/${userId}`);
+    console.log(`http://${SERVER_BASE_URL}/auth/forgotpassword/${userId}`);
   } catch (error) {
     next(error);
   }
@@ -517,7 +517,6 @@ const isPasswordValid = async (password: string) => {
       flag = 1;
       break;
     }
-    flag = 0;
   }
   if (!flag) {
     return false;
@@ -529,7 +528,6 @@ const isPasswordValid = async (password: string) => {
       flag = 1;
       break;
     }
-    flag = 0;
   }
   if (!flag) {
     return false;
@@ -541,7 +539,6 @@ const isPasswordValid = async (password: string) => {
       flag = 1;
       break;
     }
-    flag = 0;
   }
   if (flag) {
     return true;
