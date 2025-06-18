@@ -9,56 +9,52 @@ import { RequestHandler } from "express";
 // Define a function to send emails
 
 async function sendEmailOtpRegister(email: string) {
-  try {
-    // check if user already present
-    // Find user with provided email
-    const checkUserPresent = await User.findOne({ email });
-    // to be used in case of sign up
+  // check if user already present
+  // Find user with provided email
+  const checkUserPresent = await User.findOne({ email });
+  // to be used in case of sign up
 
-    // if user found then return a error response
-    if (checkUserPresent && checkUserPresent.isVerified) {
-      // Return 401 Unauthorized status code with error message
-      const err = new ProjectError("user already Registered..");
-      err.statusCode = 401;
-      throw err;
-    }
+  // if user found then return a error response
+  if (checkUserPresent && checkUserPresent.isVerified) {
+    // Return 401 Unauthorized status code with error message
+    const err = new ProjectError("User already registered..");
+    err.statusCode = 401;
+    throw err;
+  }
 
-    // generate otp
-    let otp = otpGenerator.generate(6, {
+  // generate otp
+  let otp = otpGenerator.generate(6, {
+    upperCaseAlphabets: false,
+    lowerCaseAlphabets: false,
+    specialChars: false,
+  });
+
+  let otpExists = await Otp.findOne({ otp: otp });
+  // when otpExists find then change the otp always unique otp store in database
+  while (otpExists) {
+    otp = otpGenerator.generate(6, {
       upperCaseAlphabets: false,
       lowerCaseAlphabets: false,
       specialChars: false,
     });
+    otpExists = await Otp.findOne({ otp: otp });
+  }
 
-    let otpExists = await Otp.findOne({ otp: otp });
-    // when otpExists find then change the otp always unique otp store in database
-    while (otpExists) {
-      otp = otpGenerator.generate(6, {
-        upperCaseAlphabets: false,
-        lowerCaseAlphabets: false,
-        specialChars: false,
-      });
-      otpExists = await Otp.findOne({ otp: otp });
-    }
+  await sendEmail(
+    email,
+    "Verification Registration Email OTP ",
+    `Registration OTP is ${otp}`
+  );
 
-    await sendEmail(
-      email,
-      "Verification Registration Email OTP ",
-      `Registration OTP is ${otp}`
-    );
+  const saveOtp = new Otp({ email, otp });
+  const saveResult = await saveOtp.save();
 
-    const saveOtp = new Otp({ email, otp });
-    const saveResult = await saveOtp.save();
-
-    if (!saveResult) {
-      const err = new ProjectError("OTP has not save in DataBase");
-      err.statusCode = 401;
-      throw err;
-    } else {
-      return true;
-    }
-  } catch (error) {
-    throw error;
+  if (!saveResult) {
+    const err = new ProjectError("OTP not saved in DataBase");
+    err.statusCode = 401;
+    throw err;
+  } else {
+    return true;
   }
 }
 

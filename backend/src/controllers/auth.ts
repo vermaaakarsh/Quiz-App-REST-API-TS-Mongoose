@@ -16,54 +16,41 @@ const SERVER_BASE_URL = process.env.BASE_URL;
 const registerUser: RequestHandler = async (req, res, next) => {
   let resp: ReturnResponse;
   try {
-    // take email , name , password from body
     const email = req.body.email;
     const name = req.body.name;
-    // using bcrypt hash the password
+
     let password = await bcrypt.hash(req.body.password, 12);
 
-    //create a token using email
     const token = jwt.sign({ email: email }, secretKey);
-    // send email otp for registration
     const sendOtp = await sendEmailOtpRegister(email);
-    // if email send successful
-    if (sendOtp) {
-      // check user already present in User DataBase or not
-      const checkUserExits = await User.findOne({ email });
-      // if User present in database then only update the data
-      if (checkUserExits) {
-        // update data
-        checkUserExits.name = name;
-        checkUserExits.password = password;
-        await checkUserExits.save();
-        resp = {
-          status: "success",
-          message: "OTP has sent on your email. Please Verify..",
-          // data: { userId: checkUserExits._id, token:token },
-          data: { email, token: token },
-        };
-        res.status(201).send(resp);
-      } else {
-        // if user does not present in Database then create a new entry
-        const user = new User({ email, name, password });
-        const result = await user.save();
-        if (!result) {
-          resp = { status: "error", message: "No result found", data: {} };
-          res.status(404).send(resp);
-        } else {
-          resp = {
-            status: "success",
-            message: "OTP has sent on your email. Please Verify",
-            data: { email, token: token },
-          };
-          res.status(201).send(resp);
-        }
-      }
-    } else {
+    if (!sendOtp) {
       const err = new ProjectError("OTP not send..");
       err.statusCode = 401;
       throw err;
     }
+    // check user already present in User DataBase or not
+    const checkUserExits = await User.findOne({ email });
+    // if User present in database then only update the data
+    if (checkUserExits) {
+      checkUserExits.name = name;
+      checkUserExits.password = password;
+      await checkUserExits.save();
+      resp = {
+        status: "success",
+        message: "OTP has sent on your email. Please Verify..",
+        data: { email, token: token },
+      };
+    } else {
+      // if user is not present in Database then create a new entry
+      const user = new User({ email, name, password });
+      await user.save();
+      resp = {
+        status: "success",
+        message: "OTP has sent on your email. Please Verify",
+        data: { email, token: token },
+      };
+    }
+    res.status(201).send(resp);
   } catch (error) {
     next(error);
   }
@@ -96,21 +83,20 @@ const loginUser: RequestHandler = async (req, res, next) => {
       err.statusCode = 401;
       throw err;
     }
-    //verify password using bcrypt
+
     const status = await bcrypt.compare(password, user.password);
-    //then decide
-    if (user?.accountBlocked) {
+    if (user.accountBlocked) {
       //if account is blocked due to multiple attempts it is checking the remaining time left to unblock the account
       const time =
-        86400 - (new Date().getTime() - user?.freezeTime.getTime()) / 1000;
+        86400 - (new Date().getTime() - user.freezeTime.getTime()) / 1000;
       const hoursLeft = Math.floor(time / (60 * 60));
       const minutesLeft = Math.floor(time / 60 - hoursLeft * 60);
       if (hoursLeft <= 0 && minutesLeft <= 0) {
         //This function is used if the limit of time is over it will unblock the account
-        user && (user.remainingTry = 3);
-        user && (user.accountBlocked = false);
-        user && (user.temporaryKey = "");
-        await user?.save();
+        user.remainingTry = 3;
+        user.accountBlocked = false;
+        user.temporaryKey = "";
+        await user.save();
       } else {
         //This function is used if the limit of time is not over it will throw an error and show the remaining time left to unblock the account
         const err = new ProjectError(
@@ -121,23 +107,23 @@ const loginUser: RequestHandler = async (req, res, next) => {
       }
     }
 
-    if (status && !user?.accountBlocked && user?.remainingTry < 1) {
+    if (status && !user.accountBlocked && user.remainingTry < 1) {
       const err = new ProjectError("Your account is deactivated");
       err.statusCode = 401;
       throw err;
     }
 
-    if (status && !user?.accountBlocked) {
+    if (status && !user.accountBlocked) {
       const token = jwt.sign({ userId: user._id }, secretKey, {
         expiresIn: "10h",
       });
 
-      user && (user.remainingTry = 3);
-      user && (user.temporaryKey = "");
-      user && (user.accountBlocked = false);
-      user && (user.isTempKeyUsed = false);
+      user.remainingTry = 3;
+      user.temporaryKey = "";
+      user.accountBlocked = false;
+      user.isTempKeyUsed = false;
+      await user.save();
 
-      await user?.save();
       resp = { status: "success", message: "Logged in", data: { token } };
       res.status(200).send(resp);
     } else {
